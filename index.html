@@ -3,41 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>靠北恩米 Threads版 </title>
+    <title>Threads 匿名投稿 (深色版)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* --- 樣式區 (維持原本設計) --- */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #fafafa; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; color: #1a1a1a; }
-        .form-container { background: white; width: 100%; max-width: 480px; padding: 30px; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin: 20px; }
-        h2 { text-align: center; margin-bottom: 25px; font-weight: 800; }
-        .label-text { font-size: 14px; font-weight: 600; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .optional-badge { background: #f0f0f0; color: #666; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: normal; }
-        .spoiler-btn { background-color: #eef3f7; color: #000; border: 1px solid #dce4eb; padding: 4px 10px; font-size: 12px; border-radius: 6px; cursor: pointer; margin-right: 10px; font-weight: 600; transition: all 0.2s; }
-        .spoiler-btn:hover { background-color: #dbe7f0; }
-        input[type="text"], textarea { width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 12px; font-size: 16px; background: #fafafa; box-sizing: border-box; outline: none; transition: border 0.2s, background 0.2s; }
-        input[type="text"]:focus, textarea:focus { border-color: #000; background: #fff; }
-        textarea { height: 160px; resize: none; line-height: 1.5; padding: 16px; }
+        /* --- 全域設定 (深色模式) --- */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #101010; /* 深黑背景 */
+            color: #e0e0e0; /* 淺灰文字 */
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+        }
+
+        /* --- 卡片容器 --- */
+        .form-container { 
+            background: #1e1e1e; /* 卡片深灰背景 */
+            width: 100%; 
+            max-width: 480px; 
+            padding: 30px; 
+            border-radius: 24px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4); /* 深色陰影 */
+            margin: 20px; 
+            border: 1px solid #333; /* 微弱邊框 */
+        }
+
+        h2 { 
+            text-align: center; 
+            margin-bottom: 25px; 
+            font-weight: 800; 
+            color: #ffffff; 
+        }
+
+        /* --- 標籤樣式 --- */
+        .label-text { 
+            font-size: 14px; 
+            font-weight: 600; 
+            margin-bottom: 8px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            color: #b0b0b0; 
+        }
+
+        .optional-badge { 
+            background: #333; 
+            color: #888; 
+            font-size: 11px; 
+            padding: 2px 8px; 
+            border-radius: 10px; 
+            font-weight: normal; 
+            border: 1px solid #444;
+        }
+
+        /* --- 防雷按鈕 (深色版) --- */
+        .spoiler-btn { 
+            background-color: #333; 
+            color: #ddd; 
+            border: 1px solid #444; 
+            padding: 4px 10px; 
+            font-size: 12px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            margin-right: 10px; 
+            font-weight: 600; 
+            transition: all 0.2s; 
+        }
+        .spoiler-btn:hover { 
+            background-color: #444; 
+            color: #fff; 
+        }
+
+        /* --- 輸入框 (深色版) --- */
+        input[type="text"], textarea { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #333; 
+            border-radius: 12px; 
+            font-size: 16px; 
+            background: #262626; /* 輸入框深色背景 */
+            color: #fff; 
+            box-sizing: border-box; 
+            outline: none; 
+            transition: border 0.2s, background 0.2s; 
+        }
+        
+        input[type="text"]:focus, textarea:focus { 
+            border-color: #666; 
+            background: #303030; 
+        }
+        
+        /* 調整 placeholder 顏色 */
+        ::placeholder { color: #666; }
+
+        textarea { 
+            height: 160px; 
+            resize: none; 
+            line-height: 1.5; 
+            padding: 16px; 
+        }
+        
         #tagInput { margin-bottom: 20px; }
-        .file-upload-wrapper { position: relative; margin-bottom: 10px; }
+
+        /* --- 檔案上傳區 (深色版) --- */
+        .file-upload-wrapper { 
+            position: relative; 
+            margin-bottom: 10px; 
+        }
+        
         input[type="file"] { display: none; }
-        .custom-file-upload { border: 2px dashed #e0e0e0; display: flex; align-items: center; justify-content: center; padding: 20px; border-radius: 12px; cursor: pointer; transition: all 0.2s; color: #666; font-size: 14px; background: #fafafa; }
-        .custom-file-upload:hover { border-color: #000; background: #fff; color: #000; }
-        .custom-file-upload.has-file { border-style: solid; border-color: #4CAF50; color: #4CAF50; background: #f0fff4; }
-        .spoiler-checkbox-wrapper { display: flex; align-items: center; font-size: 14px; color: #555; margin-bottom: 20px; cursor: pointer; }
-        .spoiler-checkbox-wrapper input { margin-right: 8px; width: 16px; height: 16px; }
-        .char-count { text-align: right; font-size: 12px; color: #999; margin-top: 6px; margin-bottom: 25px; }
-        .char-count.error { color: #e74c3c; }
-        button#submitBtn { width: 100%; background: #000; color: #fff; border: none; padding: 16px; border-radius: 30px; font-size: 16px; font-weight: 700; cursor: pointer; }
-        button#submitBtn:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .custom-file-upload { 
+            border: 2px dashed #444; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 20px; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            color: #888; 
+            font-size: 14px; 
+            background: #262626; 
+        }
+        
+        .custom-file-upload:hover { 
+            border-color: #777; 
+            background: #303030; 
+            color: #fff; 
+        }
+        
+        .custom-file-upload.has-file { 
+            border-style: solid; 
+            border-color: #00d362; /* 成功綠 */
+            color: #00d362; 
+            background: #003315; /* 深綠背景 */
+        }
+
+        /* --- 勾選框 --- */
+        .spoiler-checkbox-wrapper { 
+            display: flex; 
+            align-items: center; 
+            font-size: 14px; 
+            color: #aaa; 
+            margin-bottom: 20px; 
+            cursor: pointer; 
+        }
+        .spoiler-checkbox-wrapper input { 
+            margin-right: 8px; 
+            width: 16px; 
+            height: 16px; 
+            accent-color: #fff; /* 勾選框顏色 */
+        }
+
+        /* --- 字數統計 --- */
+        .char-count { 
+            text-align: right; 
+            font-size: 12px; 
+            color: #666; 
+            margin-top: 6px; 
+            margin-bottom: 25px; 
+        }
+        .char-count.error { color: #ff5252; }
+
+        /* --- 送出按鈕 (高對比) --- */
+        button#submitBtn { 
+            width: 100%; 
+            background: #ffffff; /* 白底 */
+            color: #000000; /* 黑字 */
+            border: none; 
+            padding: 16px; 
+            border-radius: 30px; 
+            font-size: 16px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: transform 0.1s, opacity 0.2s;
+        }
+        
+        button#submitBtn:hover { opacity: 0.9; }
+        button#submitBtn:active { transform: scale(0.98); }
+        button#submitBtn:disabled { 
+            background: #444; 
+            color: #888; 
+            cursor: not-allowed; 
+        }
+
+        /* 讓捲軸也變深色 (Chrome/Safari) */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #101010; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #666; }
+
     </style>
 </head>
 <body>
 
     <div class="form-container">
-        <h2>靠北恩米 Threads版 投稿系統 </h2>
+        <h2>靠北恩米 Threads版</h2>
 
         <div class="label-text">分類標籤 <span class="optional-badge">選填</span></div>
-        <input type="text" id="tagInput" placeholder="例如：NMIXX、NSWER">
+        <input type="text" id="tagInput" placeholder="例如：NMIXX、nswer">
         
         <div class="label-text">
             內容
@@ -56,7 +223,6 @@
             <label for="fileInput" class="custom-file-upload" id="fileLabel">
                 <span>📷 選擇檔案 (圖片限 8MB / 影片限 1GB)</span>
             </label>
-            <!-- 限制只能選這些格式 -->
             <input type="file" id="fileInput" accept="image/jpeg,image/png,video/mp4,video/quicktime">
         </div>
 
@@ -122,38 +288,28 @@
 
             if (!content) { alert('請輸入貼文內容！'); return; }
 
-            // --- 符合規格的嚴格檢查 ---
+            // 嚴格檢查 (維持原樣)
             if (file) {
                 const fileType = file.type;
                 const fileSize = file.size;
-                
-                // 1. 圖片檢查 (JPEG/PNG, < 8MB)
                 if (fileType.startsWith('image/')) {
                     if (!['image/jpeg', 'image/png'].includes(fileType)) {
-                        alert('圖片只支援 JPEG 或 PNG 格式！');
-                        return;
+                        alert('圖片只支援 JPEG 或 PNG 格式！'); return;
                     }
-                    if (fileSize > 8 * 1024 * 1024) { // 8MB
-                        alert('圖片大小不能超過 8MB！');
-                        return;
+                    if (fileSize > 8 * 1024 * 1024) { 
+                        alert('圖片大小不能超過 8MB！'); return;
                     }
-                }
-                // 2. 影片檢查 (MP4/MOV, < 1GB)
-                else if (fileType.startsWith('video/')) {
+                } else if (fileType.startsWith('video/')) {
                     if (!['video/mp4', 'video/quicktime'].includes(fileType)) {
-                        alert('影片只支援 MP4 或 MOV 格式！');
-                        return;
+                        alert('影片只支援 MP4 或 MOV 格式！'); return;
                     }
-                    if (fileSize > 1024 * 1024 * 1024) { // 1GB
-                        alert('影片大小不能超過 1GB！');
-                        return;
+                    if (fileSize > 1024 * 1024 * 1024) { 
+                        alert('影片大小不能超過 1GB！'); return;
                     }
                 } else {
-                    alert('不支援的檔案格式！');
-                    return;
+                    alert('不支援的檔案格式！'); return;
                 }
             }
-            // -------------------------
 
             submitBtn.disabled = true;
             submitBtn.textContent = "上傳中...";
