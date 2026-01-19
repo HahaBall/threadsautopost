@@ -7,17 +7,6 @@
     <!-- 引入 Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: sans-serif; max-width: 500px; margin: 2rem auto; padding: 0 1rem; }
-        input, textarea, button { width: 100%; margin-bottom: 1rem; padding: 0.5rem; }
-        button { background: #000; color: #fff; border: none; cursor: pointer; }<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Threads 投稿系統</title>
-    <!-- 引入 Supabase JS SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             max-width: 500px; 
@@ -186,74 +175,6 @@
                 // 發生錯誤時恢復按鈕
                 submitBtn.disabled = false;
                 submitBtn.textContent = "送出投稿";
-            }
-        }
-    </script>
-</body>
-</html>
-    </style>
-</head>
-<body>
-    <h2>📝 投稿到 Threads</h2>
-    <input type="file" id="imageInput" accept="image/*">
-    <textarea id="contentInput" placeholder="輸入貼文內容..." rows="5"></textarea>
-    <button onclick="submitPost()">送出投稿</button>
-
-    <script>
-        // --- 設定區 ---
-        const SUPABASE_URL = 'https://vngzvqpkjtccifnkalmz.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_ZZCE6lYbzT8fFpVNsjcgoQ_DAvnshwW';
-        
-        // ❌ 原本錯誤的寫法 (名字衝突)：
-        // const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        // ✅ 修正後的寫法 (改名叫 supabaseClient)：
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        async function submitPost() {
-            const fileInput = document.getElementById('imageInput');
-            const content = document.getElementById('contentInput').value;
-            const file = fileInput.files[0];
-
-            if (!file || !content) {
-                alert('請填寫內容並上傳圖片');
-                return;
-            }
-
-            try {
-                // 1. 上傳圖片到 Supabase Storage
-                // 注意：這裡都要改成用 supabaseClient 呼叫
-                const fileName = Date.now() + '_' + file.name;
-                const { data: uploadData, error: uploadError } = await supabaseClient
-                    .storage
-                    .from('images')
-                    .upload(fileName, file);
-
-                if (uploadError) throw uploadError;
-
-                // 2. 取得圖片公開連結
-                const { data: publicUrlData } = supabaseClient
-                    .storage
-                    .from('images')
-                    .getPublicUrl(fileName);
-                
-                const imageUrl = publicUrlData.publicUrl;
-
-                // 3. 寫入資料庫
-                const { error: dbError } = await supabaseClient
-                    .from('posts')
-                    .insert([
-                        { content: content, image_url: imageUrl, status: 'Pending' }
-                    ]);
-
-                if (dbError) throw dbError;
-
-                alert('✅ 投稿成功！等待審核中。');
-                location.reload();
-
-            } catch (error) {
-                console.error(error);
-                alert('發生錯誤：' + error.message);
             }
         }
     </script>
