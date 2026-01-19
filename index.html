@@ -20,10 +20,14 @@
 
     <script>
         // --- 設定區 ---
-        const SUPABASE_URL = '你的_SUPABASE_PROJECT_URL';
-        const SUPABASE_KEY = '你的_SUPABASE_ANON_KEY';
+        const SUPABASE_URL = 'https://vngzvqpkjtccifnkalmz.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_ZZCE6lYbzT8fFpVNsjcgoQ_DAvnshwW';
         
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // ❌ 原本錯誤的寫法 (名字衝突)：
+        // const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ✅ 修正後的寫法 (改名叫 supabaseClient)：
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function submitPost() {
             const fileInput = document.getElementById('imageInput');
@@ -37,9 +41,9 @@
 
             try {
                 // 1. 上傳圖片到 Supabase Storage
-                // 檔名加上時間戳記避免重複
+                // 注意：這裡都要改成用 supabaseClient 呼叫
                 const fileName = Date.now() + '_' + file.name;
-                const { data: uploadData, error: uploadError } = await supabase
+                const { data: uploadData, error: uploadError } = await supabaseClient
                     .storage
                     .from('images')
                     .upload(fileName, file);
@@ -47,7 +51,7 @@
                 if (uploadError) throw uploadError;
 
                 // 2. 取得圖片公開連結
-                const { data: publicUrlData } = supabase
+                const { data: publicUrlData } = supabaseClient
                     .storage
                     .from('images')
                     .getPublicUrl(fileName);
@@ -55,7 +59,7 @@
                 const imageUrl = publicUrlData.publicUrl;
 
                 // 3. 寫入資料庫
-                const { error: dbError } = await supabase
+                const { error: dbError } = await supabaseClient
                     .from('posts')
                     .insert([
                         { content: content, image_url: imageUrl, status: 'Pending' }
