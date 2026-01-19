@@ -6,56 +6,55 @@
     <title>Threads 匿名投稿</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* --- 全域與容器設定 --- */
+        /* --- 樣式區 (微調) --- */
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #fafafa; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; color: #1a1a1a; }
         .form-container { background: white; width: 100%; max-width: 480px; padding: 30px; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin: 20px; }
         h2 { text-align: center; margin-bottom: 25px; font-weight: 800; }
         
         .label-text { font-size: 14px; font-weight: 600; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         .optional-badge { background: #f0f0f0; color: #666; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: normal; }
-
-        /* 輸入框通用樣式 (包含新的 tag 輸入框) */
-        input[type="text"], textarea { 
-            width: 100%; 
-            padding: 12px; 
-            border: 1px solid #e0e0e0; 
-            border-radius: 12px; 
-            font-size: 16px; 
-            background: #fafafa; 
-            box-sizing: border-box; /* 確保 padding 不會撐開寬度 */
-            outline: none;
-            transition: border 0.2s, background 0.2s;
-        }
         
-        input[type="text"]:focus, textarea:focus { 
-            border-color: #000; 
-            background: #fff; 
+        /* 防雷按鈕樣式 */
+        .spoiler-btn {
+            background-color: #eef3f7;
+            color: #000;
+            border: 1px solid #dce4eb;
+            padding: 4px 10px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-weight: 600;
+            transition: all 0.2s;
         }
+        .spoiler-btn:hover { background-color: #dbe7f0; }
 
-        /* 內容輸入框特別設定 */
-        textarea { 
-            height: 150px; 
-            resize: none; 
-            line-height: 1.5;
-            padding: 16px;
-        }
+        input[type="text"], textarea { width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 12px; font-size: 16px; background: #fafafa; box-sizing: border-box; outline: none; transition: border 0.2s, background 0.2s; }
+        input[type="text"]:focus, textarea:focus { border-color: #000; background: #fff; }
+        textarea { height: 160px; resize: none; line-height: 1.5; padding: 16px; }
+        #tagInput { margin-bottom: 20px; }
 
-        /* 分類輸入框特別設定 */
-        #tagInput {
-            margin-bottom: 20px;
-        }
-
-        /* 其他樣式保持不變 */
-        .file-upload-wrapper { position: relative; margin-bottom: 20px; }
+        .file-upload-wrapper { position: relative; margin-bottom: 10px; }
         input[type="file"] { display: none; }
         .custom-file-upload { border: 2px dashed #e0e0e0; display: flex; align-items: center; justify-content: center; padding: 20px; border-radius: 12px; cursor: pointer; transition: all 0.2s; color: #666; font-size: 14px; background: #fafafa; }
         .custom-file-upload:hover { border-color: #000; background: #fff; color: #000; }
         .custom-file-upload.has-file { border-style: solid; border-color: #4CAF50; color: #4CAF50; background: #f0fff4; }
+
+        /* 圖片防雷勾選框 */
+        .spoiler-checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+        .spoiler-checkbox-wrapper input { margin-right: 8px; width: 16px; height: 16px; }
+
         .char-count { text-align: right; font-size: 12px; color: #999; margin-top: 6px; margin-bottom: 25px; }
         .char-count.error { color: #e74c3c; }
-        button { width: 100%; background: #000; color: #fff; border: none; padding: 16px; border-radius: 30px; font-size: 16px; font-weight: 700; cursor: pointer; }
-        button:hover { opacity: 0.9; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
+        button#submitBtn { width: 100%; background: #000; color: #fff; border: none; padding: 16px; border-radius: 30px; font-size: 16px; font-weight: 700; cursor: pointer; }
+        button#submitBtn:disabled { background: #ccc; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -63,87 +62,115 @@
     <div class="form-container">
         <h2>👋 發佈到 Threads</h2>
 
-        <!-- 修改點：改成 input type="text" -->
-        <div class="label-text">
-            分類標籤 <span class="optional-badge">選填</span>
-        </div>
-        <input type="text" id="tagInput" placeholder="例如：生活、遊戲 (不需要加 #)">
+        <div class="label-text">分類標籤 <span class="optional-badge">選填</span></div>
+        <input type="text" id="tagInput" placeholder="例如：生活、遊戲">
         
         <div class="label-text">
             內容
-            <span id="charCount">0 / 500</span>
+            <div>
+                <!-- 文字防雷按鈕 -->
+                <button class="spoiler-btn" onclick="wrapSpoiler()">👁️‍🗨️ 文字隱藏</button>
+                <span id="charCount">0 / 500</span>
+            </div>
         </div>
-        <textarea id="contentInput" placeholder="分享你的想法... (可直接輸入 @帳號)" maxlength="500"></textarea>
+        <textarea id="contentInput" placeholder="選取文字後按下「文字隱藏」，或直接輸入 ||劇透內容||" maxlength="500"></textarea>
         
         <div style="margin-top: 20px;" class="label-text">
-            圖片 <span class="optional-badge">選填</span>
+            圖片或影片 <span class="optional-badge">選填</span>
         </div>
         
         <div class="file-upload-wrapper">
-            <label for="imageInput" class="custom-file-upload" id="fileLabel">
-                <span>📷 點擊選擇圖片 (支援 JPG, PNG)</span>
+            <label for="fileInput" class="custom-file-upload" id="fileLabel">
+                <span>📷 點擊選擇 (支援 JPG, PNG, MP4)</span>
             </label>
-            <input type="file" id="imageInput" accept="image/*">
+            <input type="file" id="fileInput" accept="image/jpeg,image/png,image/gif,video/mp4,video/quicktime">
         </div>
+
+        <!-- 圖片防雷勾選 -->
+        <label class="spoiler-checkbox-wrapper">
+            <input type="checkbox" id="mediaSpoiler">
+            <span>把圖片/影片設為防雷 (模糊處理)</span>
+        </label>
         
         <button id="submitBtn" onclick="submitPost()">發佈投稿</button>
     </div>
 
     <script>
-        // ⚠️ 請確認這裡使用的是 ANON_KEY (公開金鑰)
         const SUPABASE_URL = 'https://vngzvqpkjtccifnkalmz.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_ZZCE6lYbzT8fFpVNsjcgoQ_DAvnshwW';
-        
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const textarea = document.getElementById('contentInput');
         const charCountDisplay = document.getElementById('charCount');
-        const fileInput = document.getElementById('imageInput');
+        const fileInput = document.getElementById('fileInput');
         const fileLabel = document.getElementById('fileLabel');
-        const tagInput = document.getElementById('tagInput'); // 改抓 input 元素
+        const tagInput = document.getElementById('tagInput');
+        const mediaSpoilerCheck = document.getElementById('mediaSpoiler'); // 取得勾選框
 
-        textarea.addEventListener('input', function() {
-            const len = this.value.length;
+        textarea.addEventListener('input', () => {
+            const len = textarea.value.length;
             charCountDisplay.textContent = `${len} / 500`;
             if (len >= 500) charCountDisplay.classList.add('error');
             else charCountDisplay.classList.remove('error');
         });
 
+        // 文字防雷功能：用 || 包裹選取文字
+        function wrapSpoiler() {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            const selected = text.substring(start, end);
+            
+            if (!selected) return; // 沒選字就不動作
+
+            const replacement = `||${selected}||`;
+            textarea.value = text.substring(0, start) + replacement + text.substring(end);
+            textarea.focus();
+            textarea.selectionStart = start;
+            textarea.selectionEnd = start + replacement.length;
+            
+            // 更新字數
+            const len = textarea.value.length;
+            charCountDisplay.textContent = `${len} / 500`;
+        }
+
         fileInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
+                const f = this.files[0];
                 fileLabel.classList.add('has-file');
-                fileLabel.innerHTML = `<span>✅ 已選擇：${this.files[0].name}</span>`;
+                const sizeMB = (f.size / 1024 / 1024).toFixed(1);
+                fileLabel.innerHTML = `<span>✅ ${f.name} (${sizeMB} MB)</span>`;
             } else {
                 fileLabel.classList.remove('has-file');
-                fileLabel.innerHTML = `<span>📷 點擊選擇圖片 (支援 JPG, PNG)</span>`;
+                fileLabel.innerHTML = `<span>📷 點擊選擇</span>`;
             }
         });
 
         async function submitPost() {
             const content = textarea.value.trim();
-            // 修改點：取得輸入框的值並去除前後空白
-            const tag = tagInput.value.trim(); 
+            const tag = tagInput.value.trim();
+            const isMediaSpoiler = mediaSpoilerCheck.checked; // 取得是否有勾選防雷
             const submitBtn = document.getElementById('submitBtn');
             const file = fileInput.files[0];
 
-            if (!content) {
-                alert('請輸入貼文內容！');
-                return;
-            }
+            if (!content) { alert('請輸入貼文內容！'); return; }
+            if (file && file.size > 50 * 1024 * 1024) { alert('檔案太大 (限制 50MB)'); return; }
 
             submitBtn.disabled = true;
-            submitBtn.textContent = "處理中...";
+            submitBtn.textContent = "上傳中...";
 
             try {
-                let imageUrl = null;
+                let mediaUrl = null;
 
                 if (file) {
                     const fileExt = file.name.split('.').pop();
                     const fileName = `${Date.now()}_${Math.floor(Math.random()*1000)}.${fileExt}`;
+                    
                     const { error: uploadError } = await supabaseClient.storage.from('images').upload(fileName, file);
                     if (uploadError) throw uploadError;
+                    
                     const { data: publicUrlData } = supabaseClient.storage.from('images').getPublicUrl(fileName);
-                    imageUrl = publicUrlData.publicUrl;
+                    mediaUrl = publicUrlData.publicUrl;
                 }
 
                 // 寫入資料庫
@@ -151,9 +178,10 @@
                     .from('posts')
                     .insert([{ 
                         content: content, 
-                        image_url: imageUrl, 
+                        image_url: mediaUrl,
                         status: 'Pending',
-                        tag: tag // 直接把使用者輸入的存進去
+                        tag: tag,
+                        is_media_spoiler: isMediaSpoiler // 傳送防雷設定
                     }]);
 
                 if (dbError) throw dbError;
@@ -163,7 +191,7 @@
 
             } catch (error) {
                 console.error(error);
-                alert('發生錯誤：' + error.message);
+                alert('失敗：' + error.message);
                 submitBtn.disabled = false;
                 submitBtn.textContent = "發佈投稿";
             }
