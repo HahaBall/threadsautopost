@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,197 +8,314 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* --- 全域設定 (深色模式) --- */
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: #101010; /* 深黑背景 */
-            color: #e0e0e0; /* 淺灰文字 */
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            margin: 0; 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #101010;
+            /* 深黑背景 */
+            color: #e0e0e0;
+            /* 淺灰文字 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
         }
 
         /* --- 卡片容器 --- */
-        .form-container { 
-            background: #1e1e1e; /* 卡片深灰背景 */
-            width: 100%; 
-            max-width: 480px; 
-            padding: 30px; 
-            border-radius: 24px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4); /* 深色陰影 */
-            margin: 20px; 
-            border: 1px solid #333; /* 微弱邊框 */
+        .form-container {
+            background: #1e1e1e;
+            /* 卡片深灰背景 */
+            width: 100%;
+            max-width: 480px;
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            /* 深色陰影 */
+            margin: 20px;
+            border: 1px solid #333;
+            /* 微弱邊框 */
         }
 
-        h2 { 
-            text-align: center; 
-            margin-bottom: 25px; 
-            font-weight: 800; 
-            color: #ffffff; 
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 800;
+            color: #ffffff;
         }
 
         /* --- 標籤樣式 --- */
-        .label-text { 
-            font-size: 14px; 
-            font-weight: 600; 
-            margin-bottom: 8px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            color: #b0b0b0; 
+        .label-text {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #b0b0b0;
         }
 
-        .optional-badge { 
-            background: #333; 
-            color: #888; 
-            font-size: 11px; 
-            padding: 2px 8px; 
-            border-radius: 10px; 
-            font-weight: normal; 
+        .optional-badge {
+            background: #333;
+            color: #888;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: normal;
             border: 1px solid #444;
         }
 
         /* --- 防雷按鈕 (深色版) --- */
-        .spoiler-btn { 
-            background-color: #333; 
-            color: #ddd; 
-            border: 1px solid #444; 
-            padding: 4px 10px; 
-            font-size: 12px; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            margin-right: 10px; 
-            font-weight: 600; 
-            transition: all 0.2s; 
+        .spoiler-btn {
+            background-color: #333;
+            color: #ddd;
+            border: 1px solid #444;
+            padding: 4px 10px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-weight: 600;
+            transition: all 0.2s;
         }
-        .spoiler-btn:hover { 
-            background-color: #444; 
-            color: #fff; 
+
+        .spoiler-btn:hover {
+            background-color: #444;
+            color: #fff;
         }
 
         /* --- 輸入框 (深色版) --- */
-        input[type="text"], textarea { 
-            width: 100%; 
-            padding: 12px; 
-            border: 1px solid #333; 
-            border-radius: 12px; 
-            font-size: 16px; 
-            background: #262626; /* 輸入框深色背景 */
-            color: #fff; 
-            box-sizing: border-box; 
-            outline: none; 
-            transition: border 0.2s, background 0.2s; 
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #333;
+            border-radius: 12px;
+            font-size: 16px;
+            background: #262626;
+            /* 輸入框深色背景 */
+            color: #fff;
+            box-sizing: border-box;
+            outline: none;
+            transition: border 0.2s, background 0.2s;
         }
-        
-        input[type="text"]:focus, textarea:focus { 
-            border-color: #666; 
-            background: #303030; 
-        }
-        
-        /* 調整 placeholder 顏色 */
-        ::placeholder { color: #666; }
 
-        textarea { 
-            height: 160px; 
-            resize: none; 
-            line-height: 1.5; 
-            padding: 16px; 
+        input[type="text"]:focus,
+        textarea:focus {
+            border-color: #666;
+            background: #303030;
         }
-        
-        #tagInput { margin-bottom: 20px; }
+
+        /* 調整 placeholder 顏色 */
+        ::placeholder {
+            color: #666;
+        }
+
+        textarea {
+            height: 160px;
+            resize: none;
+            line-height: 1.5;
+            padding: 16px;
+        }
+
+        #tagInput {
+            margin-bottom: 20px;
+        }
 
         /* --- 檔案上傳區 (深色版) --- */
-        .file-upload-wrapper { 
-            position: relative; 
-            margin-bottom: 10px; 
+        .file-upload-wrapper {
+            position: relative;
+            margin-bottom: 10px;
         }
-        
-        input[type="file"] { display: none; }
-        
-        .custom-file-upload { 
-            border: 2px dashed #444; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            padding: 20px; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            transition: all 0.2s; 
-            color: #888; 
-            font-size: 14px; 
-            background: #262626; 
+
+        input[type="file"] {
+            display: none;
         }
-        
-        .custom-file-upload:hover { 
-            border-color: #777; 
-            background: #303030; 
-            color: #fff; 
+
+        .custom-file-upload {
+            border: 2px dashed #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #888;
+            font-size: 14px;
+            background: #262626;
         }
-        
-        .custom-file-upload.has-file { 
-            border-style: solid; 
-            border-color: #00d362; /* 成功綠 */
-            color: #00d362; 
-            background: #003315; /* 深綠背景 */
+
+        .custom-file-upload:hover {
+            border-color: #777;
+            background: #303030;
+            color: #fff;
+        }
+
+        .custom-file-upload.has-file {
+            border-style: solid;
+            border-color: #00d362;
+            /* 成功綠 */
+            color: #00d362;
+            background: #003315;
+            /* 深綠背景 */
         }
 
         /* --- 勾選框 --- */
-        .spoiler-checkbox-wrapper { 
-            display: flex; 
-            align-items: center; 
-            font-size: 14px; 
-            color: #aaa; 
-            margin-bottom: 20px; 
-            cursor: pointer; 
+        .spoiler-checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 20px;
+            cursor: pointer;
         }
-        .spoiler-checkbox-wrapper input { 
-            margin-right: 8px; 
-            width: 16px; 
-            height: 16px; 
-            accent-color: #fff; /* 勾選框顏色 */
+
+        .spoiler-checkbox-wrapper input {
+            margin-right: 8px;
+            width: 16px;
+            height: 16px;
+            accent-color: #fff;
+            /* 勾選框顏色 */
         }
 
         /* --- 字數統計 --- */
-        .char-count { 
-            text-align: right; 
-            font-size: 12px; 
-            color: #666; 
-            margin-top: 6px; 
-            margin-bottom: 25px; 
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: #666;
+            margin-top: 6px;
+            margin-bottom: 25px;
         }
-        .char-count.error { color: #ff5252; }
+
+        .char-count.error {
+            color: #ff5252;
+        }
 
         /* --- 送出按鈕 (高對比) --- */
-        button#submitBtn { 
-            width: 100%; 
-            background: #ffffff; /* 白底 */
-            color: #000000; /* 黑字 */
-            border: none; 
-            padding: 16px; 
-            border-radius: 30px; 
-            font-size: 16px; 
-            font-weight: 700; 
-            cursor: pointer; 
+        button#submitBtn {
+            width: 100%;
+            background: #ffffff;
+            /* 白底 */
+            color: #000000;
+            /* 黑字 */
+            border: none;
+            padding: 16px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
             transition: transform 0.1s, opacity 0.2s;
         }
-        
-        button#submitBtn:hover { opacity: 0.9; }
-        button#submitBtn:active { transform: scale(0.98); }
-        button#submitBtn:disabled { 
-            background: #444; 
-            color: #888; 
-            cursor: not-allowed; 
+
+        button#submitBtn:hover {
+            opacity: 0.9;
+        }
+
+        button#submitBtn:active {
+            transform: scale(0.98);
+        }
+
+        button#submitBtn:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
         }
 
         /* 讓捲軸也變深色 (Chrome/Safari) */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #101010; }
-        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #666; }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
 
+        ::-webkit-scrollbar-track {
+            background: #101010;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+
+        /* --- 規格 Modal --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #1e1e1e;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid #333;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            color: #ddd;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+        }
+
+        .spec-link {
+            display: block;
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+
+        .spec-link:hover {
+            color: #aaa;
+        }
+
+        .modal-body h3 {
+            color: #fff;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .modal-body ul {
+            padding-left: 20px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .modal-body li {
+            margin-bottom: 6px;
+        }
     </style>
 </head>
+
 <body>
 
     <div class="form-container">
@@ -205,7 +323,7 @@
 
         <div class="label-text">分類標籤 <span class="optional-badge">選填</span></div>
         <input type="text" id="tagInput" placeholder="例如：NMIXX、nswer">
-        
+
         <div class="label-text">
             內容
             <div>
@@ -214,11 +332,11 @@
             </div>
         </div>
         <textarea id="contentInput" placeholder="分享你的想法... (選取文字按隱藏可防雷)" maxlength="500"></textarea>
-        
+
         <div style="margin-top: 20px;" class="label-text">
             圖片或影片 <span class="optional-badge">選填</span>
         </div>
-        
+
         <div class="file-upload-wrapper">
             <label for="fileInput" class="custom-file-upload" id="fileLabel">
                 <span>📷 選擇檔案 (圖片限 8MB / 影片限 1GB)</span>
@@ -226,12 +344,51 @@
             <input type="file" id="fileInput" accept="image/jpeg,image/png,video/mp4,video/quicktime">
         </div>
 
+        <div class="spec-link" onclick="openSpecModal()">圖片/影片 規格限制</div>
+
         <label class="spoiler-checkbox-wrapper">
             <input type="checkbox" id="mediaSpoiler">
             <span>媒體防雷 (模糊處理)</span>
         </label>
-        
+
         <button id="submitBtn" onclick="submitPost()">發佈投稿</button>
+    </div>
+
+    <!-- Modal Structure -->
+    <div id="specModal" class="modal-overlay" onclick="closeSpecModal(event)">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeSpecModal(event)">&times;</span>
+            <div class="modal-body">
+                <h3>圖像規格</h3>
+                <ul>
+                    <li><strong>格式：</strong>JPEG 和 PNG 圖像類型是官方支援的圖像貼文格式。</li>
+                    <li><strong>檔案大小：</strong>上限 8 MB。</li>
+                    <li><strong>長寬比限制：</strong>10:1</li>
+                    <li><strong>寬度下限：</strong>320（必要時將放大至此下限）</li>
+                    <li><strong>寬度上限：</strong>1440（必要時將縮小至此上限）</li>
+                    <li><strong>高度：</strong>依寬度和長寬比變更</li>
+                    <li><strong>色彩空間：</strong>sRGB。使用其他色彩空間的圖像會將其色彩空間轉換為 sRGB。</li>
+                </ul>
+
+                <h3 style="margin-top: 30px;">影片規格</h3>
+                <ul>
+                    <li><strong>容器：</strong>MOV 或 MP4（MPEG-4 Part 14），無編輯清單，檔案前面有 moov atom。</li>
+                    <li><strong>音訊轉碼器：</strong>AAC，最高 48khz 取樣速率，1 或 2 聲道（單聲道或立體聲）。</li>
+                    <li><strong>影片轉碼器：</strong>HEVC 或 H264，逐行掃描，封閉式 GOP，4:2:0 色度二次採樣。</li>
+                    <li><strong>影格速率：</strong>23-60 FPS</li>
+                    <li><strong>圖片大小：</strong>
+                        <ul>
+                            <li>最大直行數（水平像素）：1920</li>
+                            <li>所需的長寬比為 0.01:1 與 10:1 之間，但建議使用 9:16，以避免裁切或空白。</li>
+                        </ul>
+                    </li>
+                    <li><strong>影片位元速率：</strong>VBR，最高 100 Mbps。</li>
+                    <li><strong>音訊位元速率：</strong>128 kbps。</li>
+                    <li><strong>時間長度：</strong>最長 300 秒（5 分鐘），最短大於 0 秒。</li>
+                    <li><strong>檔案大小：</strong>上限 1 GB。</li>
+                </ul>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -267,7 +424,7 @@
             charCountDisplay.textContent = `${textarea.value.length} / 500`;
         }
 
-        fileInput.addEventListener('change', function() {
+        fileInput.addEventListener('change', function () {
             if (this.files && this.files[0]) {
                 const f = this.files[0];
                 fileLabel.classList.add('has-file');
@@ -296,14 +453,14 @@
                     if (!['image/jpeg', 'image/png'].includes(fileType)) {
                         alert('圖片只支援 JPEG 或 PNG 格式！'); return;
                     }
-                    if (fileSize > 8 * 1024 * 1024) { 
+                    if (fileSize > 8 * 1024 * 1024) {
                         alert('圖片大小不能超過 8MB！'); return;
                     }
                 } else if (fileType.startsWith('video/')) {
                     if (!['video/mp4', 'video/quicktime'].includes(fileType)) {
                         alert('影片只支援 MP4 或 MOV 格式！'); return;
                     }
-                    if (fileSize > 1024 * 1024 * 1024) { 
+                    if (fileSize > 1024 * 1024 * 1024) {
                         alert('影片大小不能超過 1GB！'); return;
                     }
                 } else {
@@ -319,19 +476,19 @@
 
                 if (file) {
                     const fileExt = file.name.split('.').pop();
-                    const fileName = `${Date.now()}_${Math.floor(Math.random()*1000)}.${fileExt}`;
-                    
+                    const fileName = `${Date.now()}_${Math.floor(Math.random() * 1000)}.${fileExt}`;
+
                     const { error: uploadError } = await supabaseClient.storage.from('images').upload(fileName, file);
                     if (uploadError) throw uploadError;
-                    
+
                     const { data: publicUrlData } = supabaseClient.storage.from('images').getPublicUrl(fileName);
                     mediaUrl = publicUrlData.publicUrl;
                 }
 
                 const { error: dbError } = await supabaseClient
                     .from('posts')
-                    .insert([{ 
-                        content: content, 
+                    .insert([{
+                        content: content,
                         image_url: mediaUrl,
                         status: 'Pending',
                         tag: tag,
@@ -350,6 +507,21 @@
                 submitBtn.textContent = "發佈投稿";
             }
         }
+
+        // Modal Functions
+        function openSpecModal() {
+            document.getElementById('specModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeSpecModal(e) {
+            // Close if clicked on overlay or close button (not content)
+            if (e.target.id === 'specModal' || e.target.classList.contains('modal-close')) {
+                document.getElementById('specModal').style.display = 'none';
+                document.body.style.overflow = '';
+            }
+        }
     </script>
 </body>
+
 </html>
