@@ -4,159 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Threads 匿名投稿</title>
-    <!-- 引入 Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* --- 全域設定 --- */
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: #fafafa; /* 淺灰背景 */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            color: #1a1a1a;
-        }
+        /* --- 全域與容器設定 --- */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #fafafa; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; color: #1a1a1a; }
+        .form-container { background: white; width: 100%; max-width: 480px; padding: 30px; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin: 20px; }
+        h2 { text-align: center; margin-bottom: 25px; font-weight: 800; }
+        
+        .label-text { font-size: 14px; font-weight: 600; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .optional-badge { background: #f0f0f0; color: #666; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: normal; }
 
-        /* --- 卡片容器 --- */
-        .form-container {
-            background: white;
-            width: 100%;
-            max-width: 480px;
-            padding: 30px;
-            border-radius: 24px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            margin: 20px;
-        }
-
-        h2 { 
-            text-align: center; 
-            margin-bottom: 25px; 
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-
-        /* --- 標籤樣式 --- */
-        .label-text {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* 輸入框通用樣式 (包含新的 tag 輸入框) */
+        input[type="text"], textarea { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #e0e0e0; 
+            border-radius: 12px; 
+            font-size: 16px; 
+            background: #fafafa; 
+            box-sizing: border-box; /* 確保 padding 不會撐開寬度 */
+            outline: none;
+            transition: border 0.2s, background 0.2s;
         }
         
-        .optional-badge {
-            background: #f0f0f0;
-            color: #666;
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-weight: normal;
+        input[type="text"]:focus, textarea:focus { 
+            border-color: #000; 
+            background: #fff; 
         }
 
-        /* --- 美化後的檔案上傳區 --- */
-        .file-upload-wrapper {
-            position: relative;
+        /* 內容輸入框特別設定 */
+        textarea { 
+            height: 150px; 
+            resize: none; 
+            line-height: 1.5;
+            padding: 16px;
+        }
+
+        /* 分類輸入框特別設定 */
+        #tagInput {
             margin-bottom: 20px;
         }
-        
-        input[type="file"] {
-            display: none; /* 隱藏原始醜按鈕 */
-        }
 
-        .custom-file-upload {
-            border: 2px dashed #e0e0e0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: #666;
-            font-size: 14px;
-            background: #fafafa;
-        }
-
-        .custom-file-upload:hover {
-            border-color: #000;
-            background: #fff;
-            color: #000;
-        }
-
-        .custom-file-upload.has-file {
-            border-style: solid;
-            border-color: #4CAF50;
-            color: #4CAF50;
-            background: #f0fff4;
-        }
-
-        /* --- 文字輸入區 --- */
-        textarea { 
-            width: 100%; 
-            padding: 16px; 
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            box-sizing: border-box;
-            resize: none; /* 禁止拉大 */
-            font-size: 16px;
-            line-height: 1.5;
-            outline: none;
-            transition: border 0.2s;
-            background: #fafafa;
-            height: 150px;
-        }
-
-        textarea:focus {
-            border-color: #000;
-            background: #fff;
-        }
-
-        /* --- 字數統計 --- */
-        .char-count {
-            text-align: right;
-            font-size: 12px;
-            color: #999;
-            margin-top: 6px;
-            margin-bottom: 25px;
-        }
-        .char-count.warning { color: #f39c12; }
+        /* 其他樣式保持不變 */
+        .file-upload-wrapper { position: relative; margin-bottom: 20px; }
+        input[type="file"] { display: none; }
+        .custom-file-upload { border: 2px dashed #e0e0e0; display: flex; align-items: center; justify-content: center; padding: 20px; border-radius: 12px; cursor: pointer; transition: all 0.2s; color: #666; font-size: 14px; background: #fafafa; }
+        .custom-file-upload:hover { border-color: #000; background: #fff; color: #000; }
+        .custom-file-upload.has-file { border-style: solid; border-color: #4CAF50; color: #4CAF50; background: #f0fff4; }
+        .char-count { text-align: right; font-size: 12px; color: #999; margin-top: 6px; margin-bottom: 25px; }
         .char-count.error { color: #e74c3c; }
-
-        /* --- 送出按鈕 --- */
-        button { 
-            width: 100%; 
-            background: #000; 
-            color: #fff; 
-            border: none; 
-            padding: 16px; 
-            border-radius: 30px; /* 圓形按鈕 */
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer; 
-            transition: transform 0.1s, opacity 0.2s;
-        }
+        button { width: 100%; background: #000; color: #fff; border: none; padding: 16px; border-radius: 30px; font-size: 16px; font-weight: 700; cursor: pointer; }
         button:hover { opacity: 0.9; }
-        button:active { transform: scale(0.98); }
         button:disabled { background: #ccc; cursor: not-allowed; }
-
     </style>
 </head>
 <body>
 
     <div class="form-container">
         <h2>👋 發佈到 Threads</h2>
+
+        <!-- 修改點：改成 input type="text" -->
+        <div class="label-text">
+            分類標籤 <span class="optional-badge">選填</span>
+        </div>
+        <input type="text" id="tagInput" placeholder="例如：生活、遊戲 (不需要加 #)">
         
-        <!-- 文字區域 -->
         <div class="label-text">
             內容
             <span id="charCount">0 / 500</span>
         </div>
-        <textarea id="contentInput" placeholder="分享你的想法..." maxlength="500"></textarea>
+        <textarea id="contentInput" placeholder="分享你的想法... (可直接輸入 @帳號)" maxlength="500"></textarea>
         
-        <!-- 圖片區域 -->
         <div style="margin-top: 20px;" class="label-text">
             圖片 <span class="optional-badge">選填</span>
         </div>
@@ -172,29 +90,25 @@
     </div>
 
     <script>
-        // --- 設定區 ---
+        // ⚠️ 請確認這裡使用的是 ANON_KEY (公開金鑰)
         const SUPABASE_URL = 'https://vngzvqpkjtccifnkalmz.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_ZZCE6lYbzT8fFpVNsjcgoQ_DAvnshwW';
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- UI 互動邏輯 ---
         const textarea = document.getElementById('contentInput');
         const charCountDisplay = document.getElementById('charCount');
         const fileInput = document.getElementById('imageInput');
         const fileLabel = document.getElementById('fileLabel');
+        const tagInput = document.getElementById('tagInput'); // 改抓 input 元素
 
-        // 1. 字數統計
         textarea.addEventListener('input', function() {
             const len = this.value.length;
             charCountDisplay.textContent = `${len} / 500`;
-            
-            charCountDisplay.className = '';
             if (len >= 500) charCountDisplay.classList.add('error');
-            else if (len >= 450) charCountDisplay.classList.add('warning');
+            else charCountDisplay.classList.remove('error');
         });
 
-        // 2. 檔案上傳 UI 回饋 (選了檔案後變色)
         fileInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
                 fileLabel.classList.add('has-file');
@@ -205,13 +119,13 @@
             }
         });
 
-        // --- 送出邏輯 ---
         async function submitPost() {
             const content = textarea.value.trim();
+            // 修改點：取得輸入框的值並去除前後空白
+            const tag = tagInput.value.trim(); 
             const submitBtn = document.getElementById('submitBtn');
             const file = fileInput.files[0];
 
-            // 檢查：只有文字是必填
             if (!content) {
                 alert('請輸入貼文內容！');
                 return;
@@ -221,42 +135,30 @@
             submitBtn.textContent = "處理中...";
 
             try {
-                let imageUrl = null; // 預設為 null (純文字模式)
+                let imageUrl = null;
 
-                // 判斷：如果有選圖片，才進行上傳
                 if (file) {
                     const fileExt = file.name.split('.').pop();
                     const fileName = `${Date.now()}_${Math.floor(Math.random()*1000)}.${fileExt}`;
-                    
-                    const { error: uploadError } = await supabaseClient
-                        .storage
-                        .from('images')
-                        .upload(fileName, file);
-
+                    const { error: uploadError } = await supabaseClient.storage.from('images').upload(fileName, file);
                     if (uploadError) throw uploadError;
-
-                    const { data: publicUrlData } = supabaseClient
-                        .storage
-                        .from('images')
-                        .getPublicUrl(fileName);
-                    
+                    const { data: publicUrlData } = supabaseClient.storage.from('images').getPublicUrl(fileName);
                     imageUrl = publicUrlData.publicUrl;
                 }
 
-                // 寫入資料庫 (imageUrl 可能是網址，也可能是 null)
+                // 寫入資料庫
                 const { error: dbError } = await supabaseClient
                     .from('posts')
-                    .insert([
-                        { 
-                            content: content, 
-                            image_url: imageUrl, 
-                            status: 'Pending' 
-                        }
-                    ]);
+                    .insert([{ 
+                        content: content, 
+                        image_url: imageUrl, 
+                        status: 'Pending',
+                        tag: tag // 直接把使用者輸入的存進去
+                    }]);
 
                 if (dbError) throw dbError;
 
-                alert('✅ 投稿成功！將進入審核流程。');
+                alert('✅ 投稿成功！');
                 location.reload();
 
             } catch (error) {
