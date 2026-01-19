@@ -9,7 +9,188 @@
     <style>
         body { font-family: sans-serif; max-width: 500px; margin: 2rem auto; padding: 0 1rem; }
         input, textarea, button { width: 100%; margin-bottom: 1rem; padding: 0.5rem; }
-        button { background: #000; color: #fff; border: none; cursor: pointer; }
+        button { background: #000; color: #fff; border: none; cursor: pointer; }<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threads 投稿系統</title>
+    <!-- 引入 Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            max-width: 500px; 
+            margin: 2rem auto; 
+            padding: 0 1rem; 
+            background-color: #f9f9f9;
+        }
+        h2 { text-align: center; color: #333; }
+        
+        /* 表單容器樣式 */
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        input[type="file"] {
+            width: 100%;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            box-sizing: border-box;
+        }
+
+        textarea { 
+            width: 100%; 
+            margin-bottom: 0.5rem; 
+            padding: 10px; 
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            resize: vertical; /* 允許垂直調整大小 */
+            font-size: 16px;
+        }
+
+        /* 字數統計樣式 */
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        .char-count.warning { color: #e67e22; } /* 快滿的時候變橘色 */
+        .char-count.error { color: #e74c3c; }   /* 滿了變紅色 */
+
+        button { 
+            width: 100%; 
+            background: #000; 
+            color: #fff; 
+            border: none; 
+            padding: 12px; 
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer; 
+            transition: background 0.2s;
+        }
+        button:hover { background: #333; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>📝 投稿到 Threads</h2>
+        
+        <p style="font-size: 14px; margin-bottom: 5px;">選擇圖片：</p>
+        <input type="file" id="imageInput" accept="image/*">
+        
+        <p style="font-size: 14px; margin-bottom: 5px;">貼文內容：</p>
+        <!-- 1. 加入 maxlength 屬性 -->
+        <textarea id="contentInput" placeholder="寫點什麼... (最多 500 字)" rows="6" maxlength="500"></textarea>
+        
+        <!-- 2. 加入字數顯示區塊 -->
+        <div id="charCount" class="char-count">0 / 500</div>
+        
+        <button id="submitBtn" onclick="submitPost()">送出投稿</button>
+    </div>
+
+    <script>
+        // --- 設定區 ---
+        // ⚠️ 請確認這裡使用的是 ANON_KEY (公開金鑰)，絕對不要放 Service Role Key
+        const SUPABASE_URL = 'https://vngzvqpkjtccifnkalmz.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_ZZCE6lYbzT8fFpVNsjcgoQ_DAvnshwW';
+        
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // --- 字數計算邏輯 ---
+        const textarea = document.getElementById('contentInput');
+        const charCountDisplay = document.getElementById('charCount');
+
+        textarea.addEventListener('input', function() {
+            const currentLength = this.value.length;
+            charCountDisplay.textContent = `${currentLength} / 500`;
+
+            // 視覺回饋：變色處理
+            charCountDisplay.className = 'char-count'; // 重置 class
+            if (currentLength >= 500) {
+                charCountDisplay.classList.add('error');
+            } else if (currentLength >= 450) {
+                charCountDisplay.classList.add('warning');
+            }
+        });
+
+        // --- 送出邏輯 ---
+        async function submitPost() {
+            const fileInput = document.getElementById('imageInput');
+            const content = document.getElementById('contentInput').value;
+            const submitBtn = document.getElementById('submitBtn');
+            const file = fileInput.files[0];
+
+            // 檢查
+            if (!file) {
+                alert('請上傳一張圖片！');
+                return;
+            }
+            if (!content) {
+                alert('請填寫貼文內容！');
+                return;
+            }
+            if (content.length > 500) {
+                alert('字數超過 500 字限制！');
+                return;
+            }
+
+            // 鎖定按鈕避免重複發送
+            submitBtn.disabled = true;
+            submitBtn.textContent = "上傳中...";
+
+            try {
+                // 1. 上傳圖片
+                // 使用 Date.now() 加上隨機數，確保檔名不重複
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}_${Math.floor(Math.random()*1000)}.${fileExt}`;
+                
+                const { data: uploadData, error: uploadError } = await supabase
+                    .storage
+                    .from('images')
+                    .upload(fileName, file);
+
+                if (uploadError) throw uploadError;
+
+                // 2. 取得圖片公開連結
+                const { data: publicUrlData } = supabase
+                    .storage
+                    .from('images')
+                    .getPublicUrl(fileName);
+                
+                const imageUrl = publicUrlData.publicUrl;
+
+                // 3. 寫入資料庫
+                const { error: dbError } = await supabase
+                    .from('posts')
+                    .insert([
+                        { content: content, image_url: imageUrl, status: 'Pending' }
+                    ]);
+
+                if (dbError) throw dbError;
+
+                alert('✅ 投稿成功！等待審核中。');
+                location.reload(); // 重新整理頁面
+
+            } catch (error) {
+                console.error(error);
+                alert('發生錯誤：' + error.message);
+                // 發生錯誤時恢復按鈕
+                submitBtn.disabled = false;
+                submitBtn.textContent = "送出投稿";
+            }
+        }
+    </script>
+</body>
+</html>
     </style>
 </head>
 <body>
